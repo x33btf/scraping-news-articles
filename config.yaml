@@ -1,0 +1,10 @@
+www.france24.com:
+- /html/body/main/div[3]/article/h1
+- /html/body/main/div[3]/article/p
+- /html/body/main/div[3]/article/div[3]/p/span[1]/time
+- /html/body/main/div[3]/article/div[5]/div/div[1]/div/a[1]
+- /html/body/main/div[3]/article/div[4]/figure/div/img/@src
+- /html/body/main/div[3]/article/div[6]
+- 30
+
+add requement.txt
