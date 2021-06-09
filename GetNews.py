@@ -54,17 +54,27 @@ class Article():
 		"""--------------------------------------------------------------"""
 		self.debug = True
 
+
 	def printArticle(self):
 		
 		print("------------------------------------------------------------------")
+		
 		print("site : ",self.site)
+		
 		print("title : ",self.title)
+		
 		print("author : ",self.author)
+		
 		print("date : ",self.date)
+		
 		print("desc : ",self.desc)
+		
 		print("img : ",self.img)
+		
 		print("content : ",self.content)
+		
 		print("------------------------------------------------------------------")
+
 
 	def saveArticle(self):
 
@@ -104,7 +114,8 @@ class Article():
 
 			print("News added to database")
 		
-		return self.mycol.insert_one(Art)
+		self.mycol.insert_one(Art)
+
 
 	def showAllNews(self):
 		
@@ -112,8 +123,10 @@ class Article():
 			
 			print(x) 
 
+
 class GetNews():
 	
+
 	def __init__(self):
 		
 		self.config = dict()
@@ -140,17 +153,21 @@ class GetNews():
 
 		self.articles = []
 
-		self.debug = True
+		self.debug = False
 
-		self.main()
+		self.run()
+
 
 	def LoadConfig(self):
 
 		if self.debug:
+			
 			print("Loading Config ...")
 
 		dt = ""
+		
 		with open(self.configFileName) as f:
+		
 			dt = yaml.load(f, Loader=yaml.FullLoader)
 
 		for line in dt:
@@ -175,9 +192,11 @@ class GetNews():
 			self.config[line] = data
 
 		if self.debug:
+			
 			for config in self.config:
 			
 				print(config+" : ",self.config[config])
+
 
 	def getAllLinkFromHomePage(self):
 
@@ -187,62 +206,140 @@ class GetNews():
 			
 			soup = BeautifulSoup(webpage.content, "html.parser")
 			
-			links = soup.find_all('a')
+			links = soup.find_all('a',href=True)
 			
 			for link in links:
 			
-				if "http" not in link["href"] and link["href"] != "#" and len(link["href"]) > int(self.config[site]["minLenLink"]):
+				href = link['href']
 			
-					self.webSiteLinks.append("https://"+site+link["href"])
+				if href != "#" and len(href) > int(self.config[site]["minLenLink"]):
+
+					if "https" not in href:
+			
+						href = "https://"+site+href
+			
+					else:
+			
+						if site not in href:
+			
+							continue
+					
+					self.webSiteLinks.append(href)
+
+		if self.debug:
+
+			print("found :",len(self.webSiteLinks),"News")
+
 
 	def getAllNewNewsFromLink(self):
 
 		for link in self.webSiteLinks:
 
 			try:
-			
+
 				webpage = requests.get(link, headers=self.headers, cookies=self.cookies)
-				
+					
 				soup = BeautifulSoup(webpage.content, "html.parser")
-				
+					
 				dom = etree.HTML(str(soup))
-				
-				title = dom.xpath(self.config[link.split("/")[2]]["titleXpath"])[0].text.strip()
 
-				desc = dom.xpath(self.config[link.split("/")[2]]["descXpath"])[0].text.strip()
+				title=""
 
-				date = dom.xpath(self.config[link.split("/")[2]]["dateXpath"])[0].text.strip()	
+				author=""
 
-				author = dom.xpath(self.config[link.split("/")[2]]["authorXpath"])[0].text.strip()	
+				desc=""
 
-				img = dom.xpath(self.config[link.split("/")[2]]["imgXpath"])[0]
+				content=""
 
-				html = etree.tostring(dom.xpath(self.config[link.split("/")[2]]["contentXpath"])[0])
+				date=""
 
-				soup = BeautifulSoup(html, "html.parser")
+				img=""
 
-				content = soup.text
+				try:
 
-				content = " ".join(content.split())
-				
-				content = content.replace("app google-play-badge_EN","")
+					title = dom.xpath(self.config[link.split("/")[2]]["titleXpath"])[0].text.strip()
 
-				content = content.replace("Advertising Read more","")
+				except Exception as e:
+
+					if self.debug:
+
+						print(e)
+
+				try:
+
+					desc = dom.xpath(self.config[link.split("/")[2]]["descXpath"])[0].text.strip()
+
+				except Exception as e:
+
+					if self.debug:
+
+						print(e)
+
+				try:			
+
+					date = dom.xpath(self.config[link.split("/")[2]]["dateXpath"])[0].text.strip()	
+
+				except Exception as e:
+
+					if self.debug:
+
+						print(e)
+
+				try:
+
+					author = dom.xpath(self.config[link.split("/")[2]]["authorXpath"])[0].text.strip()	
+
+				except Exception as e:
+
+					if self.debug:
+
+						print(e)
+
+				try:
+
+					img = dom.xpath(self.config[link.split("/")[2]]["imgXpath"])[0]
+
+				except Exception as e:
+
+					if self.debug:
+
+						print(e)
+
+				try:
+
+					html = etree.tostring(dom.xpath(self.config[link.split("/")[2]]["contentXpath"])[0])
+
+					soup = BeautifulSoup(html, "html.parser")
+
+					content = soup.text
+
+					content = " ".join(content.split())
+						
+					content = content.replace("app google-play-badge_EN","")
+
+					content = content.replace("Advertising Read more","")
+
+				except Exception as e:
+
+					if self.debug:
+
+						print(e)
 
 				ar = Article(link.split("/")[2],title,author,desc,content,date,img)
-				
+					
 				ar.saveArticle()
 
 				#self.articles.append(ar)
 
 				#print(ar.printArticle())
-			
-			except Exception:
-				if self.debug:
-					print("can't get news fom :",link)
 
-			
-	
+			except Exception as e:
+
+				if self.debug:
+
+					print(e)
+
+
 	def main(self):
 		
 		self.LoadConfig()
@@ -251,19 +348,20 @@ class GetNews():
 		
 		self.getAllNewNewsFromLink()
 
-#run this scipt evry timeToRun seconf
-def Run(timeToRun=3600):
+	#run this scipt every timeToRun second
+	def run(self,timeToRun=3600):
 
-	while True:
+		self.main()
 
-		startTime = time.time()
+		while True:
 
-		while time.time() - startTime < timeToRun:
+			startTime = time.time()
 
-			time.sleep(1)
+			while time.time() - startTime < timeToRun:
 
-		GetNews()
+				time.sleep(1)
+
+			self.main()
 
 
-
-Run()
+GetNews()

@@ -7,3 +7,11 @@ www.france24.com:
 - /html/body/main/div[3]/article/div[6]
 - 30
 
+www.lemonde.fr:
+- /html/body/main/section[1]/section/header/div/div/h1
+- /html/body/main/section[1]/section/header/div/div/p
+- /html/body/main/section[1]/section/header/div/section/span
+- /html/body/main/section[1]/section/header/div/p/span/a
+- /html/body/main/section[1]/section/section/article/figure/img/@src
+- /html/body/main/section[1]/section/section/article/p[1]
+- 30
