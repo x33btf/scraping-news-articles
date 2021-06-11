@@ -24,11 +24,13 @@ class NewsRouter:
 
     @news.post('/news/')
     async def create_news(news:News):
-        try:
+        try: 
+            if conn.NewsDB.News.find_one({"title":news.title}):
+                return "news already in "
             conn.NewsDB.News.insert_one(dict(news))
             return "news successfully addd"
         except:
-            return "error"
+            return  "error"
 
     @news.put('/news/{id}')
     async def update_news(id,news:News):

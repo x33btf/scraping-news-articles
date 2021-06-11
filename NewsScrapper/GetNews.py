@@ -45,13 +45,9 @@ class Article():
 		self.date = date
 		
 		self.img = img
-		"""--------------------------------------------------------------"""
-		self.myclient = pymongo.MongoClient("mongodb://localhost:27017/")
+
+		self.APIURL = "http://127.0.0.1:8000/news/"
 		
-		self.mydb = self.myclient["NewsDB"]
-		
-		self.mycol = self.mydb["News"]
-		"""--------------------------------------------------------------"""
 		self.debug = True
 
 
@@ -77,7 +73,6 @@ class Article():
 
 
 	def saveArticle(self):
-
 		Art = {
 
 			"site" : self.site, 
@@ -98,30 +93,9 @@ class Article():
 
 			}
 		
-		myquery = { "title": self.title }
+		res = requests.post(self.APIURL,json=Art)
 		
-		result = self.mycol.find(myquery)
-
-		for x in result:
-			
-			if self.debug:
-				
-				print("News already in database")
-		
-			return -1
-
-		if self.debug:
-
-			print("News added to database")
-		
-		self.mycol.insert_one(Art)
-
-
-	def showAllNews(self):
-		
-		for x in self.mycol.find({},{ "_id": 1, "title": 1}):
-			
-			print(x) 
+		print(res.text)
 
 
 class GetNews():
@@ -328,10 +302,6 @@ class GetNews():
 				ar = Article(link.split("/")[2],title,author,desc,content,date,img)
 					
 				ar.saveArticle()
-
-				#self.articles.append(ar)
-
-				#print(ar.printArticle())
 
 			except Exception as e:
 
