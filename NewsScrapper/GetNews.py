@@ -4,10 +4,11 @@ import requests
 import yaml
 import pymongo
 import time
+import json
 
 """ 
 	---------------------------------- Config File ----------------------------
-	site:title:desc:date:author:img:content:minUrlLent
+	site:title:desc:date:author:img:content:category:minUrlLent
 	----------------------------------   database  ----------------------------
 
 	"site" : website url
@@ -30,7 +31,7 @@ import time
 
 class Article():
 	
-	def __init__(self, site, title, author, desc, content, date, img):
+	def __init__(self, site, title, author, desc, content, date, img, category):
 		
 		self.site = site
 		
@@ -45,6 +46,8 @@ class Article():
 		self.date = date
 		
 		self.img = img
+
+		self.category = category
 
 		self.APIURL = "http://127.0.0.1:8000/news/"
 		
@@ -89,7 +92,7 @@ class Article():
 
 			"content" : self.content,
 
-			"category" : ""
+			"category" : self.category
 
 			}
 		
@@ -127,7 +130,7 @@ class GetNews():
 
 		self.articles = []
 
-		self.debug = False
+		self.debug = True
 
 		self.run()
 
@@ -160,7 +163,9 @@ class GetNews():
 
 			data["contentXpath"] = dt[line][6-1]
 
-			data["minLenLink"] = dt[line][7-1]
+			data["category"] = dt[line][7-1]
+
+			data["minLenLink"] = dt[line][8-1]
 			
 			
 			self.config[line] = data
@@ -210,77 +215,48 @@ class GetNews():
 		for link in self.webSiteLinks:
 
 			try:
+				title=""
+				author=""
+				desc=""
+				content=""
+				date=""
+				img=""
+				category=""
 
 				webpage = requests.get(link, headers=self.headers, cookies=self.cookies)
 					
 				soup = BeautifulSoup(webpage.content, "html.parser")
 					
 				dom = etree.HTML(str(soup))
-
-				title=""
-
-				author=""
-
-				desc=""
-
-				content=""
-
-				date=""
-
-				img=""
-
+				
 				try:
-
 					title = dom.xpath(self.config[link.split("/")[2]]["titleXpath"])[0].text.strip()
-
-				except Exception as e:
-
-					if self.debug:
-
-						print(e)
-
+				except:
+					pass
 				try:
-
 					desc = dom.xpath(self.config[link.split("/")[2]]["descXpath"])[0].text.strip()
-
-				except Exception as e:
-
-					if self.debug:
-
-						print(e)
-
-				try:			
-
+				except:
+					pass
+				try:
 					date = dom.xpath(self.config[link.split("/")[2]]["dateXpath"])[0].text.strip()	
-
-				except Exception as e:
-
-					if self.debug:
-
-						print(e)
-
+				except:
+					pass
 				try:
-
 					author = dom.xpath(self.config[link.split("/")[2]]["authorXpath"])[0].text.strip()	
-
-				except Exception as e:
-
-					if self.debug:
-
-						print(e)
-
+				except:
+					pass
 				try:
-
 					img = dom.xpath(self.config[link.split("/")[2]]["imgXpath"])[0]
-
-				except Exception as e:
-
-					if self.debug:
-
-						print(e)
-
+					img = img.get("data-image-dataset")
+					res = json.loads(img)  
+					img = res['url']+res['filename']  
+				except:
+					pass
 				try:
-
+					category = dom.xpath(self.config[link.split("/")[2]]["category"])[0].text.strip()
+				except:
+					pass
+				try:
 					html = etree.tostring(dom.xpath(self.config[link.split("/")[2]]["contentXpath"])[0])
 
 					soup = BeautifulSoup(html, "html.parser")
@@ -288,26 +264,22 @@ class GetNews():
 					content = soup.text
 
 					content = " ".join(content.split())
-						
+							
 					content = content.replace("app google-play-badge_EN","")
 
 					content = content.replace("Advertising Read more","")
-
-				except Exception as e:
-
-					if self.debug:
-
-						print(e)
-
-				ar = Article(link.split("/")[2],title,author,desc,content,date,img)
-					
+				except:
+					pass
+				
+				ar = Article(link.split("/")[2],title,author,desc,content,date,img,category)
+				
 				ar.saveArticle()
-
+				
 			except Exception as e:
 
 				if self.debug:
 
-					print(e)
+					print(link)
 
 
 	def main(self):

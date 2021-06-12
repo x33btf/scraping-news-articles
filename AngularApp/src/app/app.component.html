@@ -1,0 +1,60 @@
+<div class="container">
+    <br>
+    <h3 class="d-flex justify-content-center">News scrapping  Application with Angular, FastAPI, MongoDB </h3>
+    <h5 class="d-flex justify-content-center">Last News</h5>
+
+    <nav class="navbar navbar-expand-sm bg-light navbar-dark">
+        <ul class="navbar-nav" >
+            <li  *ngFor="let item of site">
+                <button (click)="changeSite(item)" class="m-1 btn btn-outline-primary">
+                    {{item}}
+                </button>
+            </li>
+            
+        </ul>
+    </nav>
+    <ng-container *ngFor="let item of NewsList" >
+        <div  *ngIf="item.site == selectedSite && item.title.length >0 " 
+                    class="card float-left"
+                    id="myarticle"
+                    style="height:280px"
+                    data-toggle="modal" data-target="#exampleModal"
+                    data-backdrop="static" data-keyboard="false"
+                    (click)="showarticle(item)"
+                    >
+            <img  *ngIf="item.img.length == 0" class="card-img-top img-thumbnail rounded" src="../assets/media/test.jpg" alt="img">
+            <img  *ngIf="item.img.length > 0" class="card-img-top img-thumbnail rounded" src={{item.img}} alt="img">
+           
+            <div class="card-body" >
+                <p class="card-text" >{{item.title | slice:0:30}}...</p>
+            </div>
+        
+
+
+            <!-- Modal -->
+            <div class="modal fade"  id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-xl" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                    <h5 class="modal-title pl-5" id="exampleModalLabel"> {{clickedArticle.title}}</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    </div>
+                    <div class="modal-body">
+                        <app-article [article] = "clickedArticle" ></app-article>
+                    </div>
+                </div>
+                </div>
+            </div>
+        </div>
+
+
+    </ng-container>
+
+  
+  
+</div>
+
+
+
